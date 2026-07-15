@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Student Support Chatbot</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>🎓 AI Student Support Chatbot</h1>
+    <button onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
+    <button onclick="clearChat()">🗑️ Clear Chat</button>
+
+    <div class="chat-box" id="chatBox">
+        <div class="bot-msg">
+            🤖 Hello! Ask me anything about admissions, courses or exams.
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input
+    type="text"
+    id="userInput"
+    placeholder="Type your question..."
+    onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}"
+>
+<button onclick="startListening()">🎤</button>
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+<script>
+async function sendMessage() {
+
+    let input = document.getElementById("userInput");
+    let chat = document.getElementById("chatBox");
+
+    if(input.value.trim()=="") return;
+
+    let message = input.value;
+
+    chat.innerHTML += `<div class="user-msg">${message}</div>`;
+
+    input.value="";
+    chat.innerHTML += `<div class="bot-msg" id="typing">🤖 Typing...</div>`;
+chat.scrollTop = chat.scrollHeight;
+
+    let response = await fetch("/chat",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            message:message
+        })
+    });
+
+    let data = await response.json();
+    document.getElementById("typing").remove();
+
+    chat.innerHTML += `
+<div class="bot-msg">
+    🤖 ${marked.parse(data.reply)}
+    <br>
+    <button onclick="copyText(this)">📋 Copy</button>
+</div>`;
+
+    chat.scrollTop = chat.scrollHeight;
+}
+function copyText(btn) {
+    let text = btn.parentElement.innerText.replace("📋 Copy", "").trim();
+    navigator.clipboard.writeText(text);
+
+    btn.innerHTML = "✅ Copied!";
+    setTimeout(() => {
+        btn.innerHTML = "📋 Copy";
+    }, 1500);
+}
+function toggleTheme() {
+    document.body.classList.toggle("dark");
+
+    let btn = document.getElementById("themeBtn");
+
+    if (document.body.classList.contains("dark")) {
+        btn.innerHTML = "☀️ Light Mode";
+    } else {
+        btn.innerHTML = "🌙 Dark Mode";
+    }
+}
+function clearChat() {
+    document.getElementById("chatBox").innerHTML = `
+    <div class="bot-msg">
+        🤖 Hello! Ask me anything about admissions, courses or exams.
+    </div>`;
+}
+function startListening() {
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("Speech Recognition is not supported in this browser.");
+        return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+
+    recognition.onresult = function(event) {
+        document.getElementById("userInput").value =
+            event.results[0][0].transcript;
+            sendMessage();
+    };
+
+    recognition.start();
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+</html>
