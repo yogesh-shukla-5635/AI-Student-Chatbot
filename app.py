@@ -1,10 +1,11 @@
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
+import os
 
 app = Flask(__name__)
 
 client = OpenAI(
-    api_key="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",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1"
 )
 
