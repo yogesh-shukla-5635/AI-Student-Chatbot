@@ -142,6 +142,16 @@ def chat():
         )
 
         reply = response.choices[0].message.content
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+
+        cursor.execute(
+          "INSERT INTO chats (email, question, answer) VALUES (?, ?, ?)",
+          (session["user"],message,reply)
+)
+
+        conn.commit()
+        conn.close()
 
     except Exception as e:
         reply = f"Error: {e}"
