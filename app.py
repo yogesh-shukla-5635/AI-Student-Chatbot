@@ -6,6 +6,26 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
+# ---------------- DATABASE ----------------
+def init_db():
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+# ------------------------------------------
+
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1"
@@ -25,7 +45,10 @@ def login():
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
 
-        cursor.execute("SELECT password FROM users WHERE email=?", (email,))
+        cursor.execute(
+            "SELECT password FROM users WHERE email=?",
+            (email,)
+        )
         user = cursor.fetchone()
 
         conn.close()
@@ -50,13 +73,15 @@ def signup():
 
         try:
             cursor.execute(
-                "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+                "INSERT INTO users(name,email,password) VALUES(?,?,?)",
                 (name, email, password)
             )
             conn.commit()
             conn.close()
+
             return render_template("login.html")
-        except:
+
+        except sqlite3.IntegrityError:
             conn.close()
             return "Email already exists!"
 
