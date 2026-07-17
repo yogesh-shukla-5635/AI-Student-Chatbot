@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-from openai import OpenAI
+import google.generativeai as genai
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -36,11 +36,10 @@ def init_db():
 
 init_db()
 # ------------------------------------------
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
-)
+model = genai.GenerativeModel("gemini-2.5-flash")
+
 
 @app.route("/")
 def home():
@@ -144,28 +143,16 @@ def chat():
     message = request.json["message"]
 
     try:
-        response = client.chat.completions.create(
-            model="openai/gpt-oss-20b:free",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful AI Student Support Assistant."
-                },
-                {
-                    "role": "user",
-                    "content": message
-                }
-            ]
-        )
+        response = model.generate_content(message)
+        reply = response.text
 
-        reply = response.choices[0].message.content
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
 
         cursor.execute(
-          "INSERT INTO chats (email, question, answer) VALUES (?, ?, ?)",
-          (session["user"],message,reply)
-)
+            "INSERT INTO chats (email, question, answer) VALUES (?, ?, ?)",
+            (session["user"], message, reply)
+        )
 
         conn.commit()
         conn.close()
@@ -174,7 +161,6 @@ def chat():
         reply = f"Error: {e}"
 
     return jsonify({"reply": reply})
-
 
 if __name__ == "__main__":
     app.run(debug=True)
