@@ -92,7 +92,9 @@ def signup():
 def dashboard():
     return render_template("dashboard.html")
 
-
+@app.route("/chatbot")
+def chatbot():
+    return render_template("index.html")
 @app.route("/chat", methods=["POST"])
 def chat():
     message = request.json["message"]
