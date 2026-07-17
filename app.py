@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
-import google.generativeai as genai
+from groq import Groq
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -36,9 +36,9 @@ def init_db():
 
 init_db()
 # ------------------------------------------
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-model = genai.GenerativeModel("gemini-2.0-flash")
+client = Groq(
+    api_key=os.getenv("GROQ_API_KEY")
+)
 
 
 @app.route("/")
@@ -143,8 +143,21 @@ def chat():
     message = request.json["message"]
 
     try:
-        response = model.generate_content(message)
-        reply = response.text
+        response = client.chat.completions.create(
+    model="llama-3.3-70b-versatile",
+    messages=[
+        {
+            "role": "system",
+            "content": "You are a helpful AI Student Support Assistant."
+        },
+        {
+            "role": "user",
+            "content": message
+        }
+    ]
+)
+
+        reply = response.choices[0].message.content
 
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
