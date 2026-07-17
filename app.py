@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 from openai import OpenAI
 import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+app.secret_key = "Prince_AI_Student_2026"
 
 # ---------------- DATABASE ----------------
 def init_db():
@@ -54,7 +55,8 @@ def login():
         conn.close()
 
         if user and check_password_hash(user[0], password):
-            return render_template("dashboard.html")
+           session["user"] = email
+           return redirect(url_for("dashboard"))
         else:
             return "Invalid Email or Password!"
 
@@ -90,11 +92,23 @@ def signup():
 
 @app.route("/dashboard")
 def dashboard():
+    if "user" not in session:
+        return redirect(url_for("login"))
+
     return render_template("dashboard.html")
 
 @app.route("/chatbot")
 def chatbot():
+    if "user" not in session:
+        return redirect(url_for("login"))
+
     return render_template("index.html")
+    
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
 @app.route("/chat", methods=["POST"])
 def chat():
     message = request.json["message"]
