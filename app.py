@@ -13,6 +13,22 @@ client = OpenAI(
 def home():
     return render_template("login.html")
 
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    return render_template("login.html")
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    return render_template("signup.html")
+
+
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
+
+
 @app.route("/chat", methods=["POST"])
 def chat():
     message = request.json["message"]
@@ -38,17 +54,7 @@ def chat():
         reply = f"Error: {e}"
 
     return jsonify({"reply": reply})
-    @app.route("/login", methods=["GET", "POST"])
-    def login():
-     return render_template("login.html")
-    @app.route("/signup", methods=["GET", "POST"])
-    def signup():
-     return render_template("signup.html")
 
-
-@app.route("/dashboard")
-def dashboard():
-    return render_template("dashboard.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
