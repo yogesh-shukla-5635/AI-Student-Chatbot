@@ -9,31 +9,82 @@
 </head>
 <body>
 
-<div class="container">
+<div class="app">
 
-    <h1>🎓 AI Student Support Chatbot</h1>
-    <button onclick="toggleTheme()" id="themeBtn">🌙 Dark Mode</button>
-    <button onclick="clearChat()">🗑️ Clear Chat</button>
+    <!-- Sidebar -->
+    <div class="sidebar">
 
-    <div class="chat-box" id="chatBox">
-        <div class="bot-msg">
-            🤖 Hello! Ask me anything about admissions, courses or exams.
+        <h2>🤖 AI Portal</h2>
+
+        <p>👋 {{ name }}</p>
+
+        <button onclick="window.location.reload()">
+            ➕ New Chat
+        </button>
+
+        <div class="history">
+
+            {% for chat in chats %}
+
+            <div class="history-item">
+
+                {{ chat[1][:35] }}...
+
+            </div>
+
+            {% endfor %}
+
         </div>
+
+        <a href="/logout">
+            <button class="logout-btn">
+                🚪 Logout
+            </button>
+        </a>
+
     </div>
 
-    <div class="input-area">
-        <input
-    type="text"
-    id="userInput"
-    placeholder="Type your question..."
-    onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}"
->
-<button onclick="startListening()">🎤</button>
-        <button onclick="sendMessage()">Send</button>
+    <!-- Main Chat Area -->
+    <div class="main">
+
+        <h1>🎓 AI Student Support Chatbot</h1>
+
+        <button onclick="toggleTheme()" id="themeBtn">
+            🌙 Dark Mode
+        </button>
+
+        <button onclick="clearChat()">
+            🗑️ Clear Chat
+        </button>
+
+        <div class="chat-box" id="chatBox">
+
+            <div class="bot-msg">
+                🤖 Hello {{ name }}! How can I help you today?
+            </div>
+
+        </div>
+
+        <div class="input-area">
+
+            <input
+                type="text"
+                id="userInput"
+                placeholder="Type your question..."
+                onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}"
+            >
+
+            <button onclick="startListening()">🎤</button>
+
+            <button onclick="sendMessage()">
+                Send
+            </button>
+
+        </div>
+
     </div>
 
 </div>
-
 <script>
 async function sendMessage() {
 
