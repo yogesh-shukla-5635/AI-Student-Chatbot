@@ -18,6 +18,23 @@ def home():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT password FROM users WHERE email=?", (email,))
+        user = cursor.fetchone()
+
+        conn.close()
+
+        if user and check_password_hash(user[0], password):
+            return render_template("dashboard.html")
+        else:
+            return "Invalid Email or Password!"
+
     return render_template("login.html")
 
 
