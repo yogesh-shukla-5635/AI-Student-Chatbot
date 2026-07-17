@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import os
+import sqlite3
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 
@@ -21,6 +23,26 @@ def login():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    if request.method == "POST":
+        name = request.form["name"]
+        email = request.form["email"]
+        password = generate_password_hash(request.form["password"])
+
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+                (name, email, password)
+            )
+            conn.commit()
+            conn.close()
+            return render_template("login.html")
+        except:
+            conn.close()
+            return "Email already exists!"
+
     return render_template("signup.html")
 
 
