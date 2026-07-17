@@ -54,7 +54,7 @@ def login():
 
         conn.close()
 
-        if user and check_password_hash(user[0], password):
+        if user and check_password_hash(user[1], password):
            session["user"] = email
            session["name"] = user[0]
            return redirect(url_for("dashboard"))
