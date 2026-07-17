@@ -115,7 +115,24 @@ def chatbot():
     if "user" not in session:
         return redirect(url_for("login"))
 
-    return render_template("index.html")
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, question
+        FROM chats
+        WHERE email=?
+        ORDER BY id DESC
+    """, (session["user"],))
+
+    chats = cursor.fetchall()
+    conn.close()
+
+    return render_template(
+        "index.html",
+        chats=chats,
+        name=session["name"]
+    )
 
 @app.route("/logout")
 def logout():
