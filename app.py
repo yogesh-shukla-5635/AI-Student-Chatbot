@@ -47,7 +47,7 @@ def login():
         cursor = conn.cursor()
 
         cursor.execute(
-            "SELECT password FROM users WHERE email=?",
+            "SELECT name,password FROM users WHERE email=?",
             (email,)
         )
         user = cursor.fetchone()
@@ -56,6 +56,7 @@ def login():
 
         if user and check_password_hash(user[0], password):
            session["user"] = email
+           session["name"] = user[0]
            return redirect(url_for("dashboard"))
         else:
             return "Invalid Email or Password!"
@@ -95,15 +96,17 @@ def dashboard():
     if "user" not in session:
         return redirect(url_for("login"))
 
-    return render_template("dashboard.html")
-
+    return render_template(
+        "dashboard.html",
+        name=session["name"]
+    )
 @app.route("/chatbot")
 def chatbot():
     if "user" not in session:
         return redirect(url_for("login"))
 
     return render_template("index.html")
-    
+
 @app.route("/logout")
 def logout():
     session.clear()
