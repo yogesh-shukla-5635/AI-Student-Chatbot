@@ -12,13 +12,14 @@
 <div class="app">
 
     <!-- Sidebar -->
+
     <div class="sidebar">
 
         <h2>🤖 AI Portal</h2>
 
         <p>👋 {{ name }}</p>
 
-        <button onclick="window.location.reload()">
+        <button onclick="window.location.href='/new_chat'">
             ➕ New Chat
         </button>
 
@@ -26,44 +27,95 @@
 
             {% for chat in chats %}
 
-            <div class="history-item">
+            <a href="/conversation/{{ chat['id'] }}"
+               class="history-item">
 
-                {{ chat[1][:35] }}...
+                {{ chat[1] }}
 
-            </div>
+            </a>
 
             {% endfor %}
 
         </div>
 
         <a href="/logout">
+
             <button class="logout-btn">
+
                 🚪 Logout
+
             </button>
+
         </a>
 
     </div>
 
-    <!-- Main Chat Area -->
+    <!-- Main -->
+
     <div class="main">
 
         <h1>🎓 AI Student Support Chatbot</h1>
 
-        <button onclick="toggleTheme()" id="themeBtn">
-            🌙 Dark Mode
-        </button>
+        <div class="top-buttons">
 
-        <button onclick="clearChat()">
-            🗑️ Clear Chat
-        </button>
+            <button
+                id="themeBtn"
+                onclick="toggleTheme()">
 
-        <div class="chat-box" id="chatBox">
+                🌙 Dark Mode
 
-            <div class="bot-msg">
-                🤖 Hello {{ name }}! How can I help you today?
-            </div>
+            </button>
+
+            <button
+                onclick="clearChat()">
+
+                🗑️ Clear Chat
+
+            </button>
 
         </div>
+
+        <div
+            class="chat-box"
+            id="chatBox">
+
+            {% if current_chat %}
+
+                {% for msg in current_chat %}
+
+                    {% if msg['role']=="user" %}
+
+                        <div class="user-msg">
+
+                            {{ msg['message'] }}
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="bot-msg">
+
+                            🤖 {{ msg['message'] }}
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="bot-msg">
+
+                    🤖 Hello {{ name }}!
+                    How can I help you today?
+
+                </div>
+
+            {% endif %}
+            </div>
+
+        <!-- Input Area -->
 
         <div class="input-area">
 
@@ -74,7 +126,9 @@
                 onkeydown="if(event.key==='Enter'){event.preventDefault();sendMessage();}"
             >
 
-            <button onclick="startListening()">🎤</button>
+            <button onclick="startListening()">
+                🎤
+            </button>
 
             <button onclick="sendMessage()">
                 Send
@@ -85,89 +139,150 @@
     </div>
 
 </div>
-<script>
-async function sendMessage() {
 
-    let input = document.getElementById("userInput");
-    let chat = document.getElementById("chatBox");
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+
+async function sendMessage(){
+
+    let input=document.getElementById("userInput");
+    let chat=document.getElementById("chatBox");
 
     if(input.value.trim()=="") return;
 
-    let message = input.value;
+    let message=input.value;
 
-    chat.innerHTML += `<div class="user-msg">${message}</div>`;
+    chat.innerHTML+=`
+    <div class="user-msg">
+        ${message}
+    </div>`;
 
     input.value="";
-    chat.innerHTML += `<div class="bot-msg" id="typing">🤖 Typing...</div>`;
-chat.scrollTop = chat.scrollHeight;
 
-    let response = await fetch("/chat",{
+    chat.innerHTML+=`
+    <div class="bot-msg" id="typing">
+        🤖 Typing...
+    </div>`;
+
+    chat.scrollTop=chat.scrollHeight;
+
+    let response=await fetch("/chat",{
+
         method:"POST",
+
         headers:{
             "Content-Type":"application/json"
         },
+
         body:JSON.stringify({
             message:message
         })
+
     });
 
-    let data = await response.json();
+    let data=await response.json();
+
     document.getElementById("typing").remove();
 
-    chat.innerHTML += `
-<div class="bot-msg">
-    🤖 ${marked.parse(data.reply)}
-    <br>
-    <button onclick="copyText(this)">📋 Copy</button>
-</div>`;
+    chat.innerHTML+=`
+    <div class="bot-msg">
 
-    chat.scrollTop = chat.scrollHeight;
+        🤖 ${marked.parse(data.reply)}
+
+        <br><br>
+
+        <button onclick="copyText(this)">
+            📋 Copy
+        </button>
+
+    </div>`;
+
+    chat.scrollTop=chat.scrollHeight;
 }
-function copyText(btn) {
-    let text = btn.parentElement.innerText.replace("📋 Copy", "").trim();
+function copyText(btn){
+
+    let text = btn.parentElement.innerText
+        .replace("📋 Copy","")
+        .trim();
+
     navigator.clipboard.writeText(text);
 
-    btn.innerHTML = "✅ Copied!";
-    setTimeout(() => {
-        btn.innerHTML = "📋 Copy";
-    }, 1500);
+    btn.innerHTML="✅ Copied!";
+
+    setTimeout(()=>{
+        btn.innerHTML="📋 Copy";
+    },1500);
 }
-function toggleTheme() {
+
+
+function toggleTheme(){
+
     document.body.classList.toggle("dark");
 
-    let btn = document.getElementById("themeBtn");
+    let btn=document.getElementById("themeBtn");
 
-    if (document.body.classList.contains("dark")) {
-        btn.innerHTML = "☀️ Light Mode";
-    } else {
-        btn.innerHTML = "🌙 Dark Mode";
+    if(document.body.classList.contains("dark")){
+        btn.innerHTML="☀️ Light Mode";
+    }
+    else{
+        btn.innerHTML="🌙 Dark Mode";
     }
 }
-function clearChat() {
-    document.getElementById("chatBox").innerHTML = `
+
+
+function clearChat(){
+
+    document.getElementById("chatBox").innerHTML=`
+
     <div class="bot-msg">
-        🤖 Hello! Ask me anything about admissions, courses or exams.
-    </div>`;
+
+        🤖 Hello {{ name }}! How can I help you today?
+
+    </div>
+
+    `;
 }
-function startListening() {
-    if (!('webkitSpeechRecognition' in window)) {
-        alert("Speech Recognition is not supported in this browser.");
+
+
+function startListening(){
+
+    if(!('webkitSpeechRecognition' in window)){
+
+        alert("Speech Recognition is not supported.");
+
         return;
+
     }
 
     const recognition = new webkitSpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.interimResults = false;
 
-    recognition.onresult = function(event) {
-        document.getElementById("userInput").value =
-            event.results[0][0].transcript;
-            sendMessage();
+    recognition.lang="en-US";
+
+    recognition.interimResults=false;
+
+    recognition.onresult=function(event){
+
+        document.getElementById("userInput").value=
+        event.results[0][0].transcript;
+
+        sendMessage();
+
     };
 
     recognition.start();
+
 }
+
+window.onload=function(){
+
+    let chat=document.getElementById("chatBox");
+
+    chat.scrollTop=chat.scrollHeight;
+
+};
+
 </script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 </body>
 </html>
