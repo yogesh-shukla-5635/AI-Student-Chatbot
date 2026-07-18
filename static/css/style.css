@@ -350,3 +350,34 @@ body.dark .input-area input::placeholder{
         flex:1;
     }
 }
+.container{
+    width:350px;
+    margin:100px auto;
+    padding:30px;
+    background:white;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.2);
+}
+
+.container h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.container input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+.container button{
+    width:100%;
+    padding:12px;
+    background:#10a37f;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
