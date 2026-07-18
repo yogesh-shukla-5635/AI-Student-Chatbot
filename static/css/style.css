@@ -542,3 +542,21 @@ body.dark .history-item:hover{
 .container p{
     margin-top: 15px;
 }
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.header-buttons{
+    display:flex;
+    gap:10px;
+}
+
+.main{
+    flex:1;
+    padding:30px;
+    display:flex;
+    flex-direction:column;
+}
