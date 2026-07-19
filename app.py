@@ -331,7 +331,7 @@ def chat():
 
         row = cursor.fetchone()
 
-        if row["title"] == "New Chat":
+        if row and row["title"] == "New Chat":
 
             title = message[:35]
 
