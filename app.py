@@ -3,6 +3,8 @@ from groq import Groq
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "Prince_AI_Student_2026"
